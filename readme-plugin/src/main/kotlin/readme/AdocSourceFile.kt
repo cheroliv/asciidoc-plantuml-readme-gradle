@@ -17,14 +17,18 @@ data class AdocSourceFile(val file: File) {
         private val SOURCE_PATTERN = Regex("""^(.+)_plantuml(?:_([a-z]{2}))?$""")
 
         fun isSourceOfTruth(file: File): Boolean =
-            file.isFile
-            && file.extension == "adoc"
-            && SOURCE_PATTERN.containsMatchIn(file.nameWithoutExtension)
+            file.extension == "adoc"                                    // ← supprime file.isFile
+                    && SOURCE_PATTERN.containsMatchIn(file.nameWithoutExtension)
+
+//        fun isSourceOfTruth(file: File): Boolean =
+//            file.isFile
+//            && file.extension == "adoc"
+//            && SOURCE_PATTERN.containsMatchIn(file.nameWithoutExtension)
 
         fun scanDir(dir: File): List<AdocSourceFile> =
             dir.listFiles()
                 ?.filter { isSourceOfTruth(it) }
-                ?.map    { AdocSourceFile(it) }
+                ?.map { AdocSourceFile(it) }
                 ?: emptyList()
     }
 
@@ -33,13 +37,13 @@ data class AdocSourceFile(val file: File) {
         ?: error("${file.name} n'est pas un fichier _plantuml.adoc valide")
 
     val baseName: String = match.groupValues[1]
-    val lang: String?    = match.groupValues[2].ifEmpty { null }
+    val lang: String? = match.groupValues[2].ifEmpty { null }
 
     fun effectiveLang(default: String): String = lang ?: default
 
     fun generatedFileName(): String =
         if (lang != null) "${baseName}_${lang}.adoc"
-        else              "${baseName}.adoc"
+        else "${baseName}.adoc"
 
     fun generatedFile(): File = File(file.parentFile, generatedFileName())
 }
