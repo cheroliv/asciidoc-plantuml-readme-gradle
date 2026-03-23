@@ -4,6 +4,15 @@
 :icons: font
 :source-highlighter: highlight.js
 
+++++
+<p align="right">
+  <a href="README_fr.adoc">
+    <img src=".github/workflows/readmes/images/lang-fr-red.svg" alt="Français" width="64"/>
+  </a>
+</p>
+++++
+
+
 Gradle plugin published under the Apache 2.0 license on the link:https://plugins.gradle.org[Gradle Plugin Portal].
 
 It automatically generates GitHub-compatible `README.adoc` files from `README_plantuml.adoc` source files containing native PlantUML blocks.
