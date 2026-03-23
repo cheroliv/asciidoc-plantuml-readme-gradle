@@ -1,2 +1,9 @@
+[versions]
+readme = "0.0.0"
+
+[libraries]
+
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.10" }
+readme = { id = "com.cheroliv.readme", version.ref = "readme" }
+
+[bundles]
