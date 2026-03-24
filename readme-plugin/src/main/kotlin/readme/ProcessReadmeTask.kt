@@ -29,21 +29,18 @@ abstract class ProcessReadmeTask : DefaultTask() {
         RegexOption.DOT_MATCHES_ALL
     )
 
-    // Regex : capture href="README_plantuml{_xx}.adoc" dans les blocs passthrough ++++
-    // Groupe 1 : tout ce qui précède le nom de fichier dans le href
-    // Groupe 2 : le nom du fichier _plantuml source (ex: README_plantuml_fr.adoc)
-    // Groupe 3 : tout ce qui suit dans la balise href
+    // Capture href="README_truth{_xx}.adoc" dans les blocs passthrough ++++
     private val langLinkRegex = Regex(
-        """(href=")([^"]*README_plantuml(?:_[a-z]{2})?\.adoc)"""
+        """(href=")([^"]*README_truth(?:_[a-z]{2})?\.adoc)"""
     )
 
     @TaskAction
     fun process() {
-        val root = sourceDir.get().asFile
+        val root    = sourceDir.get().asFile
         val sources = AdocSourceFile.scanDir(root)
 
         if (sources.isEmpty()) {
-            logger.warn("Aucun fichier README_plantuml*.adoc trouvé dans : ${root.absolutePath}")
+            logger.warn("Aucun fichier README_truth*.adoc trouvé dans : ${root.absolutePath}")
             return
         }
 
@@ -51,13 +48,13 @@ abstract class ProcessReadmeTask : DefaultTask() {
     }
 
     private fun processSource(src: AdocSourceFile) {
-        val lang = src.effectiveLang(defaultLang.get())
+        val lang    = src.effectiveLang(defaultLang.get())
         val content = src.file.readText()
 
         logger.lifecycle("╔═ Processing : ${src.file.name}  [lang=$lang]")
 
         val buildLangDir = File(buildImgDir.get().asFile, lang).also { it.mkdirs() }
-        val repoLangDir = File(imgDir.get().asFile, lang).also { it.mkdirs() }
+        val repoLangDir  = File(imgDir.get().asFile,      lang).also { it.mkdirs() }
 
         var diagramCount = 0
 
@@ -81,15 +78,12 @@ abstract class ProcessReadmeTask : DefaultTask() {
         }
 
         // ── Étape 2 : réécriture des liens inter-langues ───────────────────
-        // README_plantuml.adoc     → href pointe vers README_plantuml_fr.adoc
-        //                            devient → href="README_fr.adoc"
-        // README_plantuml_fr.adoc  → href pointe vers README_plantuml.adoc
-        //                            devient → href="README.adoc"
+        // README_truth.adoc    → href="README_truth_fr.adoc" → href="README_fr.adoc"
+        // README_truth_fr.adoc → href="README_truth.adoc"    → href="README.adoc"
         val rewritten = langLinkRegex.replace(afterPlantuml) { match ->
-            val prefix = match.groupValues[1]  // 'href="'
-            val linkedSource = match.groupValues[2]  // ex: README_plantuml_fr.adoc
+            val prefix       = match.groupValues[1]
+            val linkedSource = match.groupValues[2]
 
-            // Convertit le nom source _plantuml en nom de fichier généré
             val generatedName = AdocSourceFile(File(linkedSource)).generatedFileName()
 
             logger.lifecycle("║  LINK : $linkedSource → $generatedName")
@@ -109,7 +103,7 @@ abstract class ProcessReadmeTask : DefaultTask() {
         else "@startuml\n$body\n@enduml"
 
         val reader = SourceStringReader(src)
-        val fos = FileOutputStream(output)
+        val fos    = FileOutputStream(output)
         try {
             reader.outputImage(fos)
         } finally {
