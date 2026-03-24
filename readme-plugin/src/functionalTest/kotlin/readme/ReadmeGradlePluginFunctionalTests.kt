@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 /**
  * Functional tests for the 'com.cheroliv.readme' plugin.
  */
-class CvsReadmeGradlePluginFunctionalTest {
+class ReadmeGradlePluginFunctionalTests {
 
     @field:TempDir
     lateinit var projectDir: File
