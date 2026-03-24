@@ -6,13 +6,13 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.File
 
 /**
- * Modèle Jackson 2.x — miroir exact de readme-plantuml.yml
+ * Modèle Jackson 2.x — miroir exact de readme-truth.yml
  *
- * Le fichier readme-plantuml.yml N'EST PAS commité avec un vrai token.
+ * Le fichier readme-truth.yml N'EST PAS commité avec un vrai token.
  * Son contenu (token inclus) est stocké dans le secret GitHub
  * README_GRADLE_PLUGIN et écrit sur disque par la CI :
  *
- *   echo "${{ secrets.README_GRADLE_PLUGIN }}" > readme-plantuml.yml
+ *   echo "${{ secrets.README_GRADLE_PLUGIN }}" > readme-truth.yml
  *   ./gradlew -q -s commitGeneratedReadme
  *
  * TODO: migrer vers tools.jackson 3.x quand disponible en release stable
@@ -27,17 +27,17 @@ data class ReadmePlantUmlConfig(
         private val MAPPER: ObjectMapper = ObjectMapper(YAMLFactory())
             .registerKotlinModule()
 
-        const val CONFIG_FILE_NAME = "readme-plantuml.yml"
+        const val CONFIG_FILE_NAME = "readme-truth.yml"
 
         fun load(projectDir: File): ReadmePlantUmlConfig {
             val configFile = File(projectDir, CONFIG_FILE_NAME)
 
             return if (configFile.exists()) {
                 MAPPER.readValue(configFile, ReadmePlantUmlConfig::class.java)
-                    .also { println("[asciidoc-readme] Config chargée : ${configFile.absolutePath}") }
+                    .also { println("[readme] Config chargée : ${configFile.absolutePath}") }
             } else {
                 ReadmePlantUmlConfig()
-                    .also { println("[asciidoc-readme] Pas de $CONFIG_FILE_NAME — valeurs par défaut") }
+                    .also { println("[readme] Pas de $CONFIG_FILE_NAME — valeurs par défaut") }
             }
         }
     }
@@ -62,7 +62,7 @@ data class GitConfig(
     fun resolvedToken(): String =
         token.takeIf { it.isNotBlank() && it != "<YOUR_GITHUB_PAT>" }
             ?: error(
-                "Le token GitHub est vide ou non remplacé dans readme-plantuml.yml.\n" +
+                "Le token GitHub est vide ou non remplacé dans readme-truth.yml.\n" +
                         "→ Vérifiez le secret README_GRADLE_PLUGIN dans :\n" +
                         "   GitHub → Settings → Secrets and variables → Actions"
             )
