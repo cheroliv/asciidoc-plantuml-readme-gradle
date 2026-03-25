@@ -14,7 +14,7 @@ class ReadmePlugin : Plugin<Project> {
             ScaffoldTask::class.java
         ) { task ->
             task.group       = "documentation"
-            task.description = "Crée readme-truth.yml et .github/workflows/readme_truth.yml si absents"
+            task.description = "Creates readme-truth.yml and .github/workflows/readme_truth.yml if absent"
             task.projectDir  .set(project.layout.projectDirectory)
         }
 
@@ -23,7 +23,7 @@ class ReadmePlugin : Plugin<Project> {
             ProcessReadmeTask::class.java
         ) { task ->
             task.group       = "documentation"
-            task.description = "Génère README*.adoc et images depuis les sources README_truth*.adoc"
+            task.description = "Generate README*.adoc and images from README_truth*.adoc sources"
 
             task.sourceDir  .set(project.layout.projectDirectory.dir(config.source.dir))
             task.imgDir     .set(project.layout.projectDirectory.dir(config.output.imgDir))
@@ -38,7 +38,7 @@ class ReadmePlugin : Plugin<Project> {
             CommitGeneratedReadmeTask::class.java
         ) { task ->
             task.group       = "documentation"
-            task.description = "Commite et pousse les README*.adoc générés via JGit (CI only)"
+            task.description = "Commits and pushes README*.adoc generated via JGit (CI only)"
 
             task.repoDir      .set(project.layout.projectDirectory)
             task.gitUserName  .set(config.git.userName)
