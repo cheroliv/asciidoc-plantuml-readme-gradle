@@ -16,7 +16,7 @@ class ScaffoldSteps(private val world: ReadMeWorld) {
     @Given("the following files already exist:")
     fun givenFilesExist(table: DataTable) {
         table.asMaps().forEach { row ->
-            val file = row["file"] ?: error("Missing 'file' column")
+            val file    = row["file"]    ?: error("Missing 'file' column")
             val content = row["content"] ?: ""
             world.writeProjectFile(file, content)
         }
@@ -24,16 +24,10 @@ class ScaffoldSteps(private val world: ReadMeWorld) {
 
     @Given("a {string} with the following yaml values:")
     fun givenConfigWithYamlValues(fileName: String, table: DataTable) {
-        val overrides: Map<String, String> = table.asMaps().associate { row ->
+        val overrides = table.asMaps().associate { row ->
             (row["key"] ?: error("Missing 'key' column")) to (row["value"] ?: "")
         }
-        try {
-            world.writeProjectFile(fileName, buildYamlConfig(overrides))
-        } catch (ise: IllegalStateException) {
-            assertThat(ise.message)
-                .describedAs("Non existing source.dir")
-                .contains("source.dir does not exist: ${overrides["source.dir"]}/nonexistent/path")
-        }
+        world.writeProjectFile(fileName, buildYamlConfig(overrides))
     }
 
     @Given("the file {string} exists with content {string}")
@@ -50,7 +44,7 @@ class ScaffoldSteps(private val world: ReadMeWorld) {
 
     @When("I am executing the task {string} expecting failure")
     fun whenExecutingTaskExpectingFailure(taskName: String) = runBlocking {
-        world.executeGradleExpectingFailure(taskName)
+        world.executeGradle(taskName)
     }
 
     // ── Then ──────────────────────────────────────────────────────────────────
@@ -69,8 +63,8 @@ class ScaffoldSteps(private val world: ReadMeWorld) {
     fun thenFileContainsYamlValues(fileName: String, table: DataTable) {
         val content = world.readProjectFile(fileName)
         table.asMaps().forEach { row ->
-            val key = row["key"] ?: error("Missing 'key' column")
-            val value = row["value"] ?: error("Missing 'value' column")
+            val key     = row["key"]   ?: error("Missing 'key' column")
+            val value   = row["value"] ?: error("Missing 'value' column")
             val leafKey = key.substringAfterLast(".")
 
             // Accept both quoted and unquoted YAML values:
@@ -87,17 +81,6 @@ class ScaffoldSteps(private val world: ReadMeWorld) {
                 .isTrue()
         }
     }
-//    fun thenFileContainsYamlValues(fileName: String, table: DataTable) {
-//        val content = world.readProjectFile(fileName)
-//        table.asMaps().forEach { row ->
-//            val key = row["key"] ?: error("Missing 'key' column")
-//            val value = row["value"] ?: error("Missing 'value' column")
-//            val leafKey = key.substringAfterLast(".")
-//            assertThat(content)
-//                .describedAs("Expected $fileName to contain $key: $value")
-//                .contains("$leafKey: $value")
-//        }
-//    }
 
     @Then("the file {string} should contain the following watched branches:")
     fun thenFileContainsWatchedBranches(fileName: String, table: DataTable) {
@@ -120,7 +103,7 @@ class ScaffoldSteps(private val world: ReadMeWorld) {
     @Then("the following files should still contain their original content:")
     fun thenFilesStillContainOriginalContent(table: DataTable) {
         table.asMaps().forEach { row ->
-            val file = row["file"] ?: error("Missing 'file' column")
+            val file    = row["file"]    ?: error("Missing 'file' column")
             val content = row["content"] ?: error("Missing 'content' column")
             assertThat(world.readProjectFile(file))
                 .describedAs("Expected $file to still contain: $content")
@@ -141,9 +124,9 @@ class ScaffoldSteps(private val world: ReadMeWorld) {
         val output = world.buildResult?.output
             ?: error("No build result available — did the task run?")
         table.asMaps().forEach { row ->
-            val level = row["level"] ?: error("Missing 'level' column")
+            val level   = row["level"]   ?: error("Missing 'level' column")
             val keyword = row["keyword"] ?: error("Missing 'keyword' column")
-            val value = row["value"] ?: error("Missing 'value' column")
+            val value   = row["value"]   ?: error("Missing 'value' column")
             assertThat(output)
                 .describedAs(
                     "Expected log to contain [$level] with keyword '$keyword' " +
@@ -160,6 +143,7 @@ class ScaffoldSteps(private val world: ReadMeWorld) {
     /**
      * Builds a minimal valid readme-truth.yml overriding specific dot-notation keys.
      * All fields default to the plugin's standard conventions.
+     * repoUrl is intentionally omitted — resolved programmatically from .git config.
      */
     private fun buildYamlConfig(overrides: Map<String, String>): String {
         fun v(key: String, default: String) = overrides.getOrDefault(key, default)
@@ -176,6 +160,7 @@ class ScaffoldSteps(private val world: ReadMeWorld) {
               token: "${v("git.token", "<YOUR_GITHUB_PAT>")}"
               watchedBranches:
                 - "main"
+                - "master"
         """.trimIndent()
     }
 }
