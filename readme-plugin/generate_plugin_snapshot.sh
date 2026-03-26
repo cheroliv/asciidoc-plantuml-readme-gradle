@@ -61,6 +61,6 @@ done
 # ── src/**/* ──────────────────────────────────────────────────────────────────
 while IFS= read -r -d '' f; do
     [ -f "$f" ] && append_file "$f"
-done < <(find "$PROJECT_ROOT/src" -type f -print0 2>/dev/null | sort -z)
+done < <(find "$PROJECT_ROOT/src" -type f ! -name "logback-test.xml" -print0 2>/dev/null | sort -z)
 
 echo "✔ Snapshot généré : $OUTPUT_FILE"
