@@ -119,7 +119,7 @@ abstract class ScaffoldTask : DefaultTask() {
 
     private fun validateGitConfig(config: ReadmePlantUmlConfig) {
         val validator = resolveMockValidator() ?: JGitRemoteValidator()
-        when (val result = validator.validate(config.git)) {
+        when (validator.validate(config.git)) {
             is GitValidationResult.Valid -> {
                 logger.lifecycle("✔ [INFO]  GitHub connection  — OK")
                 logger.lifecycle("✔ [INFO]  repository access  — OK")
@@ -184,88 +184,88 @@ abstract class ScaffoldTask : DefaultTask() {
 
     companion object {
         val CONFIG_TEMPLATE = """
-        # ─────────────────────────────────────────────────────────────────
-        # readme-truth.yml — Plugin configuration
-        #
-        # Source of truth files convention :
-        #   README_truth.adoc       → default language
-        #   README_truth_fr.adoc    → French
-        #   README_truth_de.adoc    → German
-        #
-        # DO NOT commit this file with a real token.
-        # Store the full content of this file (token included) in the
-        # GitHub secret README_GRADLE_PLUGIN :
-        #   GitHub → Settings → Secrets and variables → Actions
-        #                     → New repository secret
-        # ─────────────────────────────────────────────────────────────────
+            # ─────────────────────────────────────────────────────────────────
+            # readme-truth.yml — Plugin configuration
+            #
+            # Source of truth files convention :
+            #   README_truth.adoc       → default language
+            #   README_truth_fr.adoc    → French
+            #   README_truth_de.adoc    → German
+            #
+            # DO NOT commit this file with a real token.
+            # Store the full content of this file (token included) in the
+            # GitHub secret README_GRADLE_PLUGIN :
+            #   GitHub → Settings → Secrets and variables → Actions
+            #                     → New repository secret
+            # ─────────────────────────────────────────────────────────────────
 
-        source:
-          dir: .
-          defaultLang: en
+            source:
+              dir: .
+              defaultLang: en
 
-        output:
-          imgDir: .github/workflows/readmes/images
+            output:
+              imgDir: .github/workflows/readmes/images
 
-        git:
-          userName: github-actions[bot]
-          userEmail: github-actions[bot]@users.noreply.github.com
-          commitMessage: "chore: generate readme [skip ci]"
-          token: <YOUR_GITHUB_PAT>
-          watchedBranches:
-            - main
-            - master
-    """.trimIndent()
+            git:
+              userName: github-actions[bot]
+              userEmail: github-actions[bot]@users.noreply.github.com
+              commitMessage: "chore: generate readme [skip ci]"
+              token: <YOUR_GITHUB_PAT>
+              watchedBranches:
+                - main
+                - master
+        """.trimIndent()
 
         private val WORKFLOW_TEMPLATE = """
-        name: Generate README from truth sources
+            name: Generate README from truth sources
 
-        on:
-          push:
-            branches:
-              - main
-              - master
-            paths:
-              - "README_truth*.adoc"
-          workflow_dispatch:
+            on:
+              push:
+                branches:
+                  - main
+                  - master
+                paths:
+                  - "README_truth*.adoc"
+              workflow_dispatch:
 
-        jobs:
-          generate-readme:
-            name: Process README_truth → README
-            runs-on: ubuntu-latest
+            jobs:
+              generate-readme:
+                name: Process README_truth → README
+                runs-on: ubuntu-latest
 
-            permissions:
-              contents: write
+                permissions:
+                  contents: write
 
-            steps:
-              - name: Checkout repository
-                uses: actions/checkout@v4
-                with:
-                  fetch-depth: 0
+                steps:
+                  - name: Checkout repository
+                    uses: actions/checkout@v4
+                    with:
+                      fetch-depth: 0
 
-              - name: Set up JDK 24
-                uses: actions/setup-java@v4
-                with:
-                  java-version: '24'
-                  distribution: 'temurin'
-                  cache: gradle
+                  - name: Set up JDK 24
+                    uses: actions/setup-java@v4
+                    with:
+                      java-version: '24'
+                      distribution: 'temurin'
+                      cache: gradle
 
-              - name: Grant execute permission for gradlew
-                run: chmod +x gradlew
+                  - name: Grant execute permission for gradlew
+                    run: chmod +x gradlew
 
-              - name: Inject plugin config
-                run: echo "${'$'}{{ secrets.README_GRADLE_PLUGIN }}" > readme-truth.yml
+                  - name: Inject plugin config
+                    run: echo "${'$'}{{ secrets.README_GRADLE_PLUGIN }}" > readme-truth.yml
 
-              - name: Generate README and commit via JGit
-                run: ./gradlew -q -s commitGeneratedReadme --no-daemon
+                  - name: Generate README and commit via JGit
+                    run: ./gradlew -q -s commitGeneratedReadme --no-daemon
 
-              - name: Summary
-                if: always()
-                run: |
-                  echo "### README — Result" >> ${'$'}GITHUB_STEP_SUMMARY
-                  echo "" >> ${'$'}GITHUB_STEP_SUMMARY
-                  git diff HEAD~1 --name-only 2>/dev/null | while read f; do
-                    echo "- \`${'$'}f\`" >> ${'$'}GITHUB_STEP_SUMMARY
-                  done || echo "- *(first run)*" >> ${'$'}GITHUB_STEP_SUMMARY
-    """.trimIndent()
+                  - name: Summary
+                    if: always()
+                    run: |
+                      echo "### README — Result" >> ${'$'}GITHUB_STEP_SUMMARY
+                      echo "" >> ${'$'}GITHUB_STEP_SUMMARY
+                      git diff HEAD~1 --name-only 2>/dev/null | while read f; do
+                        echo "- \`${'$'}f\`" >> ${'$'}GITHUB_STEP_SUMMARY
+                      done || echo "- *(first run)*" >> ${'$'}GITHUB_STEP_SUMMARY
+        """.trimIndent()
     }
 }
