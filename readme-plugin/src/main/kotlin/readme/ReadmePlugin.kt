@@ -9,6 +9,11 @@ class ReadmePlugin : Plugin<Project> {
 
         val config = ReadmePlantUmlConfig.load(project.projectDir)
 
+        // imgDir is always resolved from the git root — not from the Gradle project dir.
+        // This ensures .github/workflows/readmes/images/ lands at the repository root
+        // even when the Gradle project lives in a subdirectory.
+        val imgDir = GitUtils.resolveImgDir(project.projectDir, config.output.imgDir)
+
         val scaffold = project.tasks.register(
             "scaffoldReadme",
             ScaffoldTask::class.java
@@ -26,7 +31,7 @@ class ReadmePlugin : Plugin<Project> {
             task.description = "Generate README*.adoc and images from README_truth*.adoc sources"
 
             task.sourceDir  .set(project.layout.projectDirectory.dir(config.source.dir))
-            task.imgDir     .set(project.layout.projectDirectory.dir(config.output.imgDir))
+            task.imgDir     .set(project.layout.dir(project.provider { imgDir }))
             task.buildImgDir.set(project.layout.buildDirectory.dir("img"))
             task.defaultLang.set(config.source.defaultLang)
 
