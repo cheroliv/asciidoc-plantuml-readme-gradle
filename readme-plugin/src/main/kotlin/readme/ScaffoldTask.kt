@@ -9,8 +9,8 @@ import java.io.File
  * Scaffolding task — runs once on first launch, then validates config on every run.
  *
  * Creates if absent:
- *  - readme-truth.yml                     (template with placeholders)
- *  - .github/workflows/readme_truth.yml   (GitHub Actions workflow)
+ *  - readme.yml                          (template with placeholders)
+ *  - .github/workflows/readme_action.yml (GitHub Actions workflow)
  *
  * Validates on every run:
  *  - source.dir exists            → ERROR + build failure if not
@@ -20,7 +20,7 @@ import java.io.File
  *  - GitHub remote reachability   → WARN  + continue
  *
  * Internal test property:
- *  -Preadme.git.validator.mock=<RESULT>
+ *  -Preadme.git.validator.mock=<r>
  *  Valid values: VALID, TOKEN_PLACEHOLDER, UNREACHABLE,
  *                REPOSITORY_NOT_FOUND, INSUFFICIENT_PUSH_RIGHTS
  */
@@ -47,25 +47,25 @@ abstract class ScaffoldTask : DefaultTask() {
         val configFile = File(root, ReadmePlantUmlConfig.CONFIG_FILE_NAME)
 
         if (configFile.exists()) {
-            logger.lifecycle("✔ readme-truth.yml already exists — skipped")
+            logger.lifecycle("✔ readme.yml already exists — skipped")
             return
         }
 
         configFile.writeText(CONFIG_TEMPLATE)
-        logger.lifecycle("✔ readme-truth.yml created — fill in your token and add to GitHub Secrets")
+        logger.lifecycle("✔ readme.yml created — fill in your token and add to GitHub Secrets")
     }
 
     private fun scaffoldWorkflow(root: File) {
         val workflowDir  = File(root, ".github/workflows").also { it.mkdirs() }
-        val workflowFile = File(workflowDir, "readme_truth.yml")
+        val workflowFile = File(workflowDir, "readme_action.yml")
 
         if (workflowFile.exists()) {
-            logger.lifecycle("✔ .github/workflows/readme_truth.yml already exists — skipped")
+            logger.lifecycle("✔ .github/workflows/readme_action.yml already exists — skipped")
             return
         }
 
         workflowFile.writeText(WORKFLOW_TEMPLATE)
-        logger.lifecycle("✔ .github/workflows/readme_truth.yml created")
+        logger.lifecycle("✔ .github/workflows/readme_action.yml created")
         logger.lifecycle("  → commit this file to activate the CI workflow")
     }
 
@@ -83,7 +83,7 @@ abstract class ScaffoldTask : DefaultTask() {
         if (!sourceDir.exists()) {
             logger.error(
                 "[ERROR] source.dir does not exist: ${config.source.dir}\n" +
-                "→ Update 'source.dir' in readme-truth.yml to a valid path"
+                "→ Update 'source.dir' in readme.yml to a valid path"
             )
             throw IllegalStateException(
                 "source.dir does not exist: ${config.source.dir}"
@@ -183,7 +183,7 @@ abstract class ScaffoldTask : DefaultTask() {
      * Resolves a mock validator from the internal test property.
      * Returns null in production — JGitRemoteValidator is used instead.
      *
-     * Internal test property: -Preadme.git.validator.mock=<RESULT>
+     * Internal test property: -Preadme.git.validator.mock=<r>
      */
     private fun resolveMockValidator(): GitRemoteValidator? {
         val mockValue = project.findProperty("readme.git.validator.mock")
@@ -208,7 +208,7 @@ abstract class ScaffoldTask : DefaultTask() {
     companion object {
         val CONFIG_TEMPLATE = """
             # ─────────────────────────────────────────────────────────────────
-            # readme-truth.yml — Plugin configuration
+            # readme.yml — Plugin configuration
             #
             # Source of truth files convention :
             #   README_truth.adoc       → default language
@@ -276,7 +276,7 @@ abstract class ScaffoldTask : DefaultTask() {
                     run: chmod +x gradlew
 
                   - name: Inject plugin config
-                    run: echo "${'$'}{{ secrets.README_GRADLE_PLUGIN }}" > readme-truth.yml
+                    run: echo "${'$'}{{ secrets.README_GRADLE_PLUGIN }}" > readme.yml
 
                   - name: Generate README and commit via JGit
                     run: ./gradlew -q -s commitGeneratedReadme --no-daemon
