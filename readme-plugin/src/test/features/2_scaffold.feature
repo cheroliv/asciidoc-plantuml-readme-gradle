@@ -40,7 +40,6 @@ Feature: Scaffold README configuration
       | git.userEmail        | github-actions[bot]@users.noreply.github.com               |
       | git.commitMessage    | chore: generate readme [skip ci]                           |
       | git.token            | <YOUR_GITHUB_PAT>                                          |
-
     And the file "readme-truth.yml" should contain the following watched branches:
       | branch  |
       | main    |
@@ -93,6 +92,27 @@ Feature: Scaffold README configuration
     And the build log should contain the following entries:
       | level  | keyword    | value       |
       | ERROR  | source.dir | nonexistent |
+
+  Scenario: scaffold fails when output.imgDir cannot be created
+    Given a "readme-truth.yml" with the following yaml values:
+      | key           | value                       |
+      | output.imgDir | readme-truth.yml/impossible |
+    When I am executing the task "scaffoldReadme"
+    Then the build should fail
+    And the build log should contain the following entries:
+      | level | keyword | value   |
+      | ERROR | imgDir  | created |
+
+  Scenario: scaffold fails when output.imgDir exists but is not writable
+    Given a "readme-truth.yml" with the following yaml values:
+      | key           | value                            |
+      | output.imgDir | .github/workflows/readmes/images |
+    And the directory ".github/workflows/readmes/images" exists and is not writable
+    When I am executing the task "scaffoldReadme"
+    Then the build should fail
+    And the build log should contain the following entries:
+      | level | keyword | value    |
+      | ERROR | imgDir  | writable |
 
   # ── Git config warnings ────────────────────────────────────────────────────
 
