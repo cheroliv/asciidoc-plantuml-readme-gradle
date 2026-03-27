@@ -14,8 +14,6 @@ on:
       - '**'
     paths-ignore:
       - 'README_truth*.adoc'
-      - '.github/workflows/readme_action.yml'
-      - '.github/workflows/integration_test.yml'
       - '**.md'
   pull_request:
 
