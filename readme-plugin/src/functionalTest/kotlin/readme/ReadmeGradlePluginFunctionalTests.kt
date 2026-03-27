@@ -25,7 +25,7 @@ class ReadmeGradlePluginFunctionalTests {
         buildFile.writeText("""plugins { id("com.cheroliv.readme") }""")
     }
 
-    // YAML valide minimal pour les tests qui pré-créent readme-truth.yml
+    // YAML valide minimal pour les tests qui pré-créent readme.yml
     private val validConfigYaml = """
         source:
           dir: "."
@@ -56,7 +56,7 @@ class ReadmeGradlePluginFunctionalTests {
     }
 
     @Test
-    fun `scaffoldReadme creates readme-truth yml`() {
+    fun `scaffoldReadme creates readme yml`() {
         setupProject()
 
         GradleRunner.create()
@@ -66,7 +66,7 @@ class ReadmeGradlePluginFunctionalTests {
             .withProjectDir(projectDir)
             .build()
 
-        assertTrue(File(projectDir, "readme-truth.yml").exists())
+        assertTrue(File(projectDir, "readme.yml").exists())
     }
 
     @Test
@@ -80,7 +80,7 @@ class ReadmeGradlePluginFunctionalTests {
             .withProjectDir(projectDir)
             .build()
 
-        assertTrue(File(projectDir, ".github/workflows/readme_truth.yml").exists())
+        assertTrue(File(projectDir, ".github/workflows/readme_action.yml").exists())
     }
 
     @Test
@@ -88,10 +88,10 @@ class ReadmeGradlePluginFunctionalTests {
         setupProject()
 
         // ← YAML valide obligatoire — Jackson parse le fichier au chargement du plugin
-        val configFile = File(projectDir, "readme-truth.yml")
+        val configFile = File(projectDir, "readme.yml")
             .also { it.writeText(validConfigYaml) }
         val workflowDir  = File(projectDir, ".github/workflows").also { it.mkdirs() }
-        val workflowFile = File(workflowDir, "readme_truth.yml")
+        val workflowFile = File(workflowDir, "readme_action.yml")
             .also { it.writeText("# existing workflow") }
 
         GradleRunner.create()
